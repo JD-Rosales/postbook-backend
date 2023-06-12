@@ -4,7 +4,7 @@ import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 import UserRouter from './routes/UserRoutes';
 
-const PORT: number = parseInt(process.env.PORT as string) || 8000;
+const PORT: number = parseInt(process.env.PORT as string) || 5000;
 const app = express();
 const prisma = new PrismaClient();
 

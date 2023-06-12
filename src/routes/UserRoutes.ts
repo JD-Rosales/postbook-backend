@@ -5,7 +5,8 @@ import * as UserController from '../controllers/UserController';
 
 const UserRouter = express.Router();
 
-UserRouter.post('/register', UserController.register);
 UserRouter.get('/:id', UserController.getUser);
+UserRouter.post('/register', UserController.register);
+UserRouter.post('/login', UserController.login);
 
 export default UserRouter;

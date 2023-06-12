@@ -18,15 +18,33 @@ export const userDetails = async (id: number): Promise<User | null> => {
   return user;
 };
 
-export const checkEmail = async (email: string): Promise<boolean> => {
+export const login = async (
+  email: string,
+  password: string
+): Promise<User | null> => {
+  const user = await prisma.user.findFirst({
+    where: {
+      email,
+      password,
+    },
+  });
+
+  return user;
+};
+
+export const checkEmail = async (email: string): Promise<User | null> => {
   const user = await prisma.user.findUnique({
     where: {
       email,
     },
+    select: {
+      id: true,
+      email: true,
+      password: true,
+    },
   });
 
-  if (user) return true;
-  else return false;
+  return user;
 };
 
 export const register = async (
