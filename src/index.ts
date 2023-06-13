@@ -14,6 +14,10 @@ app.use(express.json());
 // api routes
 app.use('/api/user', UserRouter);
 
+app.all('*', (req, res) => {
+  res.send('POST BOOK BACKEND API');
+});
+
 app.listen(PORT, async () => {
   try {
     await prisma.$connect();
