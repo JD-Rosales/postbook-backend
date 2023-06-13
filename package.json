@@ -9,7 +9,6 @@
   "scripts": {
     "dev": "nodemon src/index.ts",
     "build": "rimraf ./dist && tsc",
-    "test": "tsc",
     "start": "npm run build && node dist/src/index.js"
   },
   "keywords": [],
