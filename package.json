@@ -7,10 +7,10 @@
     "seed": "ts-node prisma/seed.ts"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/index.ts",
-    "build": "rimraf ./build && tsc",
-    "start": "npm run build && node build/src/index.js"
+    "build": "rimraf ./dist && tsc",
+    "test": "tsc",
+    "start": "npm run build && node dist/src/index.js"
   },
   "keywords": [],
   "author": "",
