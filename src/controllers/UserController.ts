@@ -19,7 +19,7 @@ export const getUser = async (req: Request, res: Response) => {
 };
 
 export const login = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+  const { email, password, password_confirmation } = req.body;
 
   try {
     // validate data
@@ -54,18 +54,30 @@ export const login = async (req: Request, res: Response) => {
 };
 
 export const register = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+  const { email, password, password_confirmation } = req.body;
 
   try {
     // validate data
-    const inputSchema = z.object({
-      email: z.string({ required_error: 'Email is required' }).email(),
-      password: z
-        .string({ required_error: 'Password is required' })
-        .min(6, 'Password must contain at least 6 character(s)'),
-    });
+    const inputSchema = z
+      .object({
+        email: z.string({ required_error: 'Email is required' }).email(),
+        password: z
+          .string({ required_error: 'Password is required' })
+          .min(6, 'Password must contain at least 6 character(s)'),
+        password_confirmation: z.string({
+          required_error: 'Password confimation is required',
+        }),
+      })
+      .refine((data) => data.password === data.password_confirmation, {
+        message: 'Passwords do not match',
+        path: ['password_confirmation'],
+      });
 
-    const validator = validate(inputSchema, { email, password });
+    const validator = validate(inputSchema, {
+      email,
+      password,
+      password_confirmation,
+    });
 
     if (validator?.errors)
       return res.status(400).json({ message: validator.issues[0].message });

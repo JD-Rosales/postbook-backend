@@ -1,6 +1,6 @@
-import { AnyZodObject, ZodError } from 'zod';
+import { ZodTypeAny, ZodError } from 'zod';
 
-const validate = (schema: AnyZodObject, data: unknown): ZodError => {
+const validate = (schema: ZodTypeAny, data: unknown): ZodError => {
   try {
     return schema.parse(data) as ZodError;
   } catch (error) {

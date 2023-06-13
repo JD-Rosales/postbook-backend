@@ -49,7 +49,7 @@ export const checkEmail = async (email: string): Promise<User | null> => {
 
 export const register = async (
   user: Omit<User, 'id'>
-): Promise<User | null> => {
+): Promise<Omit<User, 'password'> | null> => {
   const data = await prisma.user.create({
     data: {
       email: user.email,
