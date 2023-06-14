@@ -1,12 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, User } from '@prisma/client';
 
 const prisma = new PrismaClient();
-
-type User = {
-  id: number;
-  email: string;
-  password: string;
-};
 
 export const userDetails = async (id: number): Promise<User | null> => {
   const user = await prisma.user.findUnique({
@@ -37,23 +31,22 @@ export const checkEmail = async (email: string): Promise<User | null> => {
     where: {
       email,
     },
-    select: {
-      id: true,
-      email: true,
-      password: true,
-    },
   });
 
   return user;
 };
 
-export const register = async (
-  user: Omit<User, 'id'>
-): Promise<Omit<User, 'password'> | null> => {
+export const register = async ({
+  email,
+  password,
+}: {
+  email: string;
+  password: string;
+}): Promise<User | null> => {
   const data = await prisma.user.create({
     data: {
-      email: user.email,
-      password: user.password,
+      email,
+      password,
     },
   });
 

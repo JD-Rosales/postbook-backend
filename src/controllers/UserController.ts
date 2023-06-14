@@ -4,6 +4,8 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import * as UserServices from '../services/UserServices';
 import validate from '../utils/SchemaValidator';
+import { CustomRequest } from '../middlewares/VerifyToken';
+import generateToken from '../utils/JwtGenerator';
 
 export const getUser = async (req: Request, res: Response) => {
   try {
@@ -14,12 +16,21 @@ export const getUser = async (req: Request, res: Response) => {
     if (user) return res.status(200).json(user);
     else return res.status(404).json({ message: 'No user found' });
   } catch (error) {
-    return res.status(500).json({ message: error });
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const validateToken = async (req: Request, res: Response) => {
+  try {
+    const user = (req as CustomRequest).user;
+    return res.status(200).json({ data: user });
+  } catch (error) {
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
 export const login = async (req: Request, res: Response) => {
-  const { email, password, password_confirmation } = req.body;
+  const { email, password } = req.body;
 
   try {
     // validate data
@@ -44,10 +55,11 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ message: 'Invalid password' });
     }
 
-    const token = jwt.sign({ id: user?.id }, process.env.SECRET_KEY as string, {
-      expiresIn: '1d',
-    });
-    return res.status(200).json({ token });
+    const { password: _, ...formattedUser } = user;
+
+    const token = generateToken(formattedUser);
+
+    return res.status(200).json({ data: formattedUser, token });
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
   }
@@ -91,7 +103,15 @@ export const register = async (req: Request, res: Response) => {
     const hashPassword = bcrypt.hashSync(password, 10);
 
     const user = await UserServices.register({ email, password: hashPassword });
-    if (user) return res.status(200).json(user);
+
+    if (!user) {
+      throw Error;
+    }
+
+    // remove password field
+    const { password: _, ...formattedUser } = user;
+
+    if (user) return res.status(200).json({ data: formattedUser });
     else return res.status(500).json({ message: 'An error has occured' });
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
