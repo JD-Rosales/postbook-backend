@@ -15,7 +15,10 @@ const prisma = new PrismaClient();
 //   })
 // );
 
-const whitelist = ['friendly-croissant-e5dcc5.netlify.app'];
+const whitelist = [
+  'http://friendly-croissant-e5dcc5.netlify.app',
+  'https://www.google.com',
+];
 
 app.use(
   cors({
