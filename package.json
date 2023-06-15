@@ -6,9 +6,14 @@
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
   },
-  "scripts": {
-    "dev": "nodemon src/index.ts",
+  "testscripts": {
+    "dev": "nodemon index.ts",
     "build": "npm install && rimraf ./dist && tsc",
+    "start": "npm run build && node dist/index.js"
+  },
+  "scripts": {
+    "dev": "nodemon index.ts",
+    "build": "npm install && tsc",
     "start": "npm run build && node dist/index.js"
   },
   "keywords": [],
