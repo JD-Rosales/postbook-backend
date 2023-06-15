@@ -8,13 +8,6 @@ const PORT: number = parseInt(process.env.PORT as string) || 5000;
 const app = express();
 const prisma = new PrismaClient();
 
-// app.use(
-//   cors({
-//     origin: ['friendly-croissant-e5dcc5.netlify.app'],
-//     credentials: true,
-//   })
-// );
-
 const whitelist = [
   'https://friendly-croissant-e5dcc5.netlify.app',
   'https://www.google.com',
