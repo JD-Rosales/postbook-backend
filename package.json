@@ -3,16 +3,13 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "engines": {
-    "node": "14.x"
-  },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
   },
   "scripts": {
     "dev": "nodemon src/index.ts",
     "build": "npm install && rimraf ./dist && tsc",
-    "start": "npm run build && node dist/src/index.js"
+    "start": "npm run build && node dist/index.js"
   },
   "keywords": [],
   "author": "",
