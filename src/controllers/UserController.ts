@@ -36,9 +36,7 @@ export const login = async (req: Request, res: Response) => {
     // validate data
     const inputSchema = z.object({
       email: z.string({ required_error: 'Email is required' }).email(),
-      password: z
-        .string({ required_error: 'Password is required' })
-        .min(6, 'Password must contain at least 6 character(s)'),
+      password: z.string({ required_error: 'Password is required' }),
     });
 
     const validator = validate(inputSchema, { email, password });

@@ -2,30 +2,14 @@ require('dotenv').config();
 import express from 'express';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
+import corsOption from './config/cors';
 import UserRouter from './routes/UserRoutes';
 
 const PORT: number = parseInt(process.env.PORT as string) || 5000;
 const app = express();
 const prisma = new PrismaClient();
 
-const whitelist = [
-  'https://friendly-croissant-e5dcc5.netlify.app',
-  'https://www.google.com',
-];
-
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin || whitelist.indexOf(origin as string) !== -1) {
-        callback(null, true);
-        console.log(origin, 'is allowed by CORS');
-      } else {
-        console.log(origin, 'is block by CORS');
-      }
-    },
-    credentials: true,
-  })
-);
+app.use(cors(corsOption));
 app.use(express.json());
 
 // api routes
