@@ -1,8 +1,7 @@
-let whitelist = ['http://localhost:5173'];
-
-if (process.env.ENVIRONMENT === 'PRODUCTION') {
-  whitelist.concat(['https://friendly-croissant-e5dcc5.netlify.app']);
-}
+const whitelist = [
+  'http://localhost:5173',
+  'https://friendly-croissant-e5dcc5.netlify.app',
+];
 
 const corsOption = {
   origin: function (origin: any, callback: (arg0: any, arg1: any) => void) {
