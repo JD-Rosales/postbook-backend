@@ -1,4 +1,4 @@
-import { PrismaClient, User } from '@prisma/client';
+import { PrismaClient, User, Profile } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -47,6 +47,38 @@ export const register = async ({
     data: {
       email,
       password,
+    },
+  });
+
+  return data;
+};
+
+// Add or Update User Details
+export const userProfile = async ({
+  firstName,
+  middleName,
+  lastName,
+  userId,
+}: {
+  firstName: string;
+  middleName: string;
+  lastName: string;
+  userId: number;
+}): Promise<Profile | null> => {
+  const data = await prisma.profile.upsert({
+    where: {
+      userId,
+    },
+    update: {
+      firstName,
+      middleName,
+      lastName,
+    },
+    create: {
+      firstName,
+      middleName,
+      lastName,
+      userId,
     },
   });
 

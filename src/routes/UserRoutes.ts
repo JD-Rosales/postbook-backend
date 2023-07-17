@@ -6,6 +6,7 @@ const UserRouter = express.Router();
 
 UserRouter.get('/', verifyJwt, UserController.validateToken);
 UserRouter.get('/:id', verifyJwt, UserController.getUser);
+UserRouter.post('/profile', verifyJwt, UserController.AddUserDetails);
 UserRouter.post('/register', UserController.register);
 UserRouter.post('/login', UserController.login);
 

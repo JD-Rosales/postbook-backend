@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import z from 'zod';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
 import * as UserServices from '../services/UserServices';
 import validate from '../utils/SchemaValidator';
 import { CustomRequest } from '../middlewares/VerifyToken';
@@ -110,6 +109,41 @@ export const register = async (req: Request, res: Response) => {
     const { password: _, ...formattedUser } = user;
 
     if (user) return res.status(200).json({ data: formattedUser });
+    else return res.status(500).json({ message: 'An error has occured' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const AddUserDetails = async (req: Request, res: Response) => {
+  const { firstName, middleName, lastName } = req.body;
+  try {
+    const userId = (req as CustomRequest).user.id;
+
+    // validate data
+    const inputSchema = z.object({
+      firstName: z.string({ required_error: 'First name is required' }),
+      lastName: z.string({ required_error: 'Last name is required' }),
+      userId: z.number({ required_error: 'User ID is missing' }),
+    });
+
+    const validator = validate(inputSchema, {
+      firstName,
+      lastName,
+      userId,
+    });
+
+    if (validator?.errors)
+      return res.status(400).json({ message: validator.issues[0].message });
+
+    const userDetails = await UserServices.userProfile({
+      firstName,
+      middleName,
+      lastName,
+      userId,
+    });
+
+    if (userDetails) return res.status(200).json({ data: userDetails });
     else return res.status(500).json({ message: 'An error has occured' });
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
