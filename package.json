@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "nodemon src/index.ts",
-    "build": "npm install && rimraf ./dist && tsc",
+    "build": "npm install && rimraf ./dist && rimraf ./node_modules && tsc",
     "start": "npm run build && node dist/src/index.js"
   },
   "keywords": [],
