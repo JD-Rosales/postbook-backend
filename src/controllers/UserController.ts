@@ -116,14 +116,22 @@ export const register = async (req: Request, res: Response) => {
 };
 
 export const AddUserDetails = async (req: Request, res: Response) => {
-  const { firstName, middleName, lastName } = req.body;
+  let { firstName, middleName, lastName } = req.body;
   try {
     const userId = (req as CustomRequest).user.id;
 
+    firstName = firstName.trim();
+    middleName = middleName.trim();
+    lastName = lastName.trim();
+
     // validate data
     const inputSchema = z.object({
-      firstName: z.string({ required_error: 'First name is required' }),
-      lastName: z.string({ required_error: 'Last name is required' }),
+      firstName: z
+        .string({ required_error: 'First name is required' })
+        .min(1, 'First name is required'),
+      lastName: z
+        .string({ required_error: 'Last name is required' })
+        .min(1, 'Last name is required'),
       userId: z.number({ required_error: 'User ID is missing' }),
     });
 
