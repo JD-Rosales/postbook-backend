@@ -15,7 +15,7 @@ export const getUser = async (req: Request, res: Response) => {
     if (user) return res.status(200).json(user);
     else return res.status(404).json({ message: 'No user found' });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: error });
   }
 };
 
@@ -24,7 +24,7 @@ export const validateToken = async (req: Request, res: Response) => {
     const user = (req as CustomRequest).user;
     return res.status(200).json({ data: user });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: error });
   }
 };
 
@@ -58,7 +58,7 @@ export const login = async (req: Request, res: Response) => {
 
     return res.status(200).json({ data: formattedUser, token });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: error });
   }
 };
 
@@ -111,7 +111,7 @@ export const register = async (req: Request, res: Response) => {
     if (user) return res.status(200).json({ data: formattedUser });
     else return res.status(500).json({ message: 'An error has occured' });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: error });
   }
 };
 
@@ -154,6 +154,6 @@ export const AddUserDetails = async (req: Request, res: Response) => {
     if (userDetails) return res.status(200).json({ data: userDetails });
     else return res.status(500).json({ message: 'An error has occured' });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: error });
   }
 };
