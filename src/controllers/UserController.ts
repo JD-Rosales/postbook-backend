@@ -6,22 +6,10 @@ import validate from '../utils/SchemaValidator';
 import { CustomRequest } from '../middlewares/VerifyToken';
 import generateToken from '../utils/JwtGenerator';
 
-export const getUser = async (req: Request, res: Response) => {
-  try {
-    const id: number = parseInt(req.params.id);
-
-    const user = await UserServices.userDetails(id);
-
-    if (user) return res.status(200).json(user);
-    else return res.status(404).json({ message: 'No user found' });
-  } catch (error) {
-    return res.status(500).json({ message: error });
-  }
-};
-
 export const validateToken = async (req: Request, res: Response) => {
   try {
     const user = (req as CustomRequest).user;
+
     return res.status(200).json({ data: user });
   } catch (error) {
     return res.status(500).json({ message: error });
@@ -153,6 +141,37 @@ export const AddUserDetails = async (req: Request, res: Response) => {
 
     if (userDetails) return res.status(200).json({ data: userDetails });
     else return res.status(500).json({ message: 'An error has occured' });
+  } catch (error) {
+    return res.status(500).json({ message: error });
+  }
+};
+
+export const getUserProfile = async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id);
+  try {
+    if (!id) return res.status(404).json({ message: 'No user profile found!' });
+
+    const profile = await UserServices.getProfile(id);
+
+    if (!profile) {
+      getUser(req, res);
+      return;
+    }
+
+    return res.status(200).json({ data: profile });
+  } catch (error) {
+    return res.status(500).json({ message: error });
+  }
+};
+
+export const getUser = async (req: Request, res: Response) => {
+  try {
+    const id: number = parseInt(req.params.id);
+
+    const user = await UserServices.userDetails(id);
+
+    if (user) return res.status(200).json({ data: user });
+    else return res.status(404).json({ message: 'No user found' });
   } catch (error) {
     return res.status(500).json({ message: error });
   }

@@ -2,14 +2,21 @@ import { PrismaClient, User, Profile } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export const userDetails = async (id: number): Promise<User | null> => {
+export const userDetails = async (
+  id: number
+): Promise<Omit<User, 'password'> | null> => {
   const user = await prisma.user.findUnique({
     where: {
       id,
     },
   });
 
-  return user;
+  if (user) {
+    const { password, ...userWithoutPassword } = user;
+    return userWithoutPassword;
+  }
+
+  return null;
 };
 
 export const login = async (
@@ -83,4 +90,14 @@ export const userProfile = async ({
   });
 
   return data;
+};
+
+export const getProfile = async (userId: number): Promise<Profile | null> => {
+  const profile = await prisma.profile.findUnique({
+    where: {
+      userId,
+    },
+  });
+
+  return profile;
 };
