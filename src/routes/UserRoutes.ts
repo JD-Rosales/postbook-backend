@@ -7,6 +7,7 @@ const UserRouter = express.Router();
 UserRouter.get('/', verifyJwt, UserController.validateToken);
 UserRouter.get('/:id', verifyJwt, UserController.getUserProfile);
 UserRouter.put('/profile', verifyJwt, UserController.AddUserDetails);
+UserRouter.put('/testupload', UserController.testImageUpload);
 UserRouter.post('/register', UserController.register);
 UserRouter.post('/login', UserController.login);
 

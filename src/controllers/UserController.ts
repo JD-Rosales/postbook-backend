@@ -5,6 +5,7 @@ import * as UserServices from '../services/UserServices';
 import validate from '../utils/SchemaValidator';
 import { CustomRequest } from '../middlewares/VerifyToken';
 import generateToken from '../utils/JwtGenerator';
+import { cloudinary } from '../config/cloudinary';
 
 export const validateToken = async (req: Request, res: Response) => {
   try {
@@ -104,7 +105,7 @@ export const register = async (req: Request, res: Response) => {
 };
 
 export const AddUserDetails = async (req: Request, res: Response) => {
-  let { firstName, middleName, lastName } = req.body;
+  let { firstName, middleName, lastName, profilePhoto, coverPhoto } = req.body;
   try {
     const userId = (req as CustomRequest).user.id;
 
@@ -131,6 +132,9 @@ export const AddUserDetails = async (req: Request, res: Response) => {
 
     if (validator?.errors)
       return res.status(400).json({ message: validator.issues[0].message });
+
+    console.log('PROFILE PHOTO: ', profilePhoto);
+    console.log('COVER PHOTO: ', coverPhoto);
 
     const userDetails = await UserServices.userProfile({
       firstName,
@@ -172,6 +176,25 @@ export const getUser = async (req: Request, res: Response) => {
 
     if (user) return res.status(200).json({ data: user });
     else return res.status(404).json({ message: 'No user found' });
+  } catch (error) {
+    return res.status(500).json({ message: error });
+  }
+};
+
+export const testImageUpload = async (req: Request, res: Response) => {
+  try {
+    const imgUploader = await cloudinary.uploader.upload(
+      'https://upload.wikimedia.org/wikipedia/commons/a/ae/Olympic_flag.jpg',
+      {
+        upload_preset: process.env.CLOUDINARY_UPLOAD_PRESET,
+      },
+      (err: any, res: any) => {
+        console.log('RESPONSE: ', res);
+        console.log('ERROR: ', err);
+      }
+    );
+
+    return res.status(200).json({ data: imgUploader });
   } catch (error) {
     return res.status(500).json({ message: error });
   }
