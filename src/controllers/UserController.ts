@@ -133,13 +133,12 @@ export const AddUserDetails = async (req: Request, res: Response) => {
     if (validator?.errors)
       return res.status(400).json({ message: validator.issues[0].message });
 
-    console.log('PROFILE PHOTO: ', profilePhoto);
-    console.log('COVER PHOTO: ', coverPhoto);
-
     const userDetails = await UserServices.userProfile({
       firstName,
       middleName,
       lastName,
+      profilePhoto,
+      coverPhoto,
       userId,
     });
 

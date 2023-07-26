@@ -65,11 +65,15 @@ export const userProfile = async ({
   firstName,
   middleName,
   lastName,
+  profilePhoto,
+  coverPhoto,
   userId,
 }: {
   firstName: string;
   middleName: string;
   lastName: string;
+  profilePhoto?: string;
+  coverPhoto?: string;
   userId: number;
 }): Promise<Profile | null> => {
   const data = await prisma.profile.upsert({
@@ -80,11 +84,15 @@ export const userProfile = async ({
       firstName,
       middleName,
       lastName,
+      ...(profilePhoto && { profilePhoto }),
+      ...(coverPhoto && { coverPhoto }),
     },
     create: {
       firstName,
       middleName,
       lastName,
+      ...(profilePhoto && { profilePhoto }),
+      ...(coverPhoto && { coverPhoto }),
       userId,
     },
   });
