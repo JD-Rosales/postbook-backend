@@ -109,9 +109,9 @@ export const AddUserDetails = async (req: Request, res: Response) => {
   try {
     const userId = (req as CustomRequest).user.id;
 
-    firstName = firstName.trim();
-    middleName = middleName.trim();
-    lastName = lastName.trim();
+    firstName = firstName?.trim();
+    middleName = middleName?.trim();
+    lastName = lastName?.trim();
 
     // validate data
     const inputSchema = z.object({

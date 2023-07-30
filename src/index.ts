@@ -4,6 +4,7 @@ import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 import corsOption from './config/cors';
 import UserRouter from './routes/UserRoutes';
+import PostRouter from './routes/PostRoutes';
 
 const PORT: number = parseInt(process.env.PORT as string) || 5000;
 const app = express();
@@ -14,6 +15,7 @@ app.use(express.json());
 
 // api routes
 app.use('/api/user', UserRouter);
+app.use('/api/post', PostRouter);
 
 app.all('*', (req, res) => {
   res.send('POST BOOK BACKEND API');
