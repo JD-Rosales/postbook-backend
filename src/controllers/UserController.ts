@@ -47,7 +47,7 @@ export const login = async (req: Request, res: Response) => {
 
     return res.status(200).json({ data: formattedUser, token });
   } catch (error) {
-    return res.status(500).json({ message: error });
+    return res.status(500).json({ message: (error as Error).message });
   }
 };
 
@@ -80,121 +80,16 @@ export const register = async (req: Request, res: Response) => {
     if (validator?.errors)
       return res.status(400).json({ message: validator.issues[0].message });
 
-    // check for duplicate email
-    if (await UserServices.checkEmail(email)) {
-      return res.status(409).json({ message: 'Email is already registered' });
-    }
-
     // hash the password
     const hashPassword = bcrypt.hashSync(password, 10);
 
     const user = await UserServices.register({ email, password: hashPassword });
 
-    if (!user) {
-      throw Error;
-    }
-
     // remove password field
     const { password: _, ...formattedUser } = user;
 
-    if (user) return res.status(200).json({ data: formattedUser });
-    else return res.status(500).json({ message: 'An error has occured' });
+    return res.status(200).json({ data: formattedUser });
   } catch (error) {
-    return res.status(500).json({ message: error });
-  }
-};
-
-export const AddUserDetails = async (req: Request, res: Response) => {
-  let { firstName, middleName, lastName, profilePhoto, coverPhoto } = req.body;
-  try {
-    const userId = (req as CustomRequest).user.id;
-
-    firstName = firstName?.trim();
-    middleName = middleName?.trim();
-    lastName = lastName?.trim();
-
-    // validate data
-    const inputSchema = z.object({
-      firstName: z
-        .string({ required_error: 'First name is required' })
-        .min(1, 'First name is required'),
-      lastName: z
-        .string({ required_error: 'Last name is required' })
-        .min(1, 'Last name is required'),
-      userId: z.number({ required_error: 'User ID is missing' }),
-    });
-
-    const validator = validate(inputSchema, {
-      firstName,
-      lastName,
-      userId,
-    });
-
-    if (validator?.errors)
-      return res.status(400).json({ message: validator.issues[0].message });
-
-    const userDetails = await UserServices.userProfile({
-      firstName,
-      middleName,
-      lastName,
-      profilePhoto,
-      coverPhoto,
-      userId,
-    });
-
-    if (userDetails) return res.status(200).json({ data: userDetails });
-    else return res.status(500).json({ message: 'An error has occured' });
-  } catch (error) {
-    return res.status(500).json({ message: error });
-  }
-};
-
-export const getUserProfile = async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
-  try {
-    if (!id) return res.status(404).json({ message: 'No user profile found!' });
-
-    const profile = await UserServices.getProfile(id);
-
-    if (!profile) {
-      getUser(req, res);
-      return;
-    }
-
-    return res.status(200).json({ data: profile });
-  } catch (error) {
-    return res.status(500).json({ message: error });
-  }
-};
-
-export const getUser = async (req: Request, res: Response) => {
-  try {
-    const id: number = parseInt(req.params.id);
-
-    const user = await UserServices.userDetails(id);
-
-    if (user) return res.status(200).json({ data: user });
-    else return res.status(404).json({ message: 'No user found' });
-  } catch (error) {
-    return res.status(500).json({ message: error });
-  }
-};
-
-export const testImageUpload = async (req: Request, res: Response) => {
-  try {
-    const imgUploader = await cloudinary.uploader.upload(
-      'https://upload.wikimedia.org/wikipedia/commons/a/ae/Olympic_flag.jpg',
-      {
-        upload_preset: process.env.CLOUDINARY_UPLOAD_PRESET,
-      },
-      (err: any, res: any) => {
-        console.log('RESPONSE: ', res);
-        console.log('ERROR: ', err);
-      }
-    );
-
-    return res.status(200).json({ data: imgUploader });
-  } catch (error) {
-    return res.status(500).json({ message: error });
+    return res.status(500).json({ message: (error as Error).message });
   }
 };

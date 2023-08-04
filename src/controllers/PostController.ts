@@ -17,9 +17,8 @@ export const createPost = async (req: Request, res: Response) => {
 
     const post = await PostServices.createPost({ text, photo, authorId });
 
-    if (post) return res.status(201).json({ data: post });
-    else return res.status(500).json({ message: 'An error has occured' });
+    return res.status(201).json({ data: post });
   } catch (error) {
-    return res.status(500).json({ message: error });
+    return res.status(500).json({ message: (error as Error).message });
   }
 };

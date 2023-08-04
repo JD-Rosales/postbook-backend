@@ -2,23 +2,6 @@ import { PrismaClient, User, Profile } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export const userDetails = async (
-  id: number
-): Promise<Omit<User, 'password'> | null> => {
-  const user = await prisma.user.findUnique({
-    where: {
-      id,
-    },
-  });
-
-  if (user) {
-    const { password, ...userWithoutPassword } = user;
-    return userWithoutPassword;
-  }
-
-  return null;
-};
-
 export const login = async (
   email: string,
   password: string
@@ -49,7 +32,15 @@ export const register = async ({
 }: {
   email: string;
   password: string;
-}): Promise<User | null> => {
+}): Promise<User> => {
+  const isRegistered = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+
+  if (isRegistered) throw new Error('Email is already registered');
+
   const data = await prisma.user.create({
     data: {
       email,
@@ -60,52 +51,19 @@ export const register = async ({
   return data;
 };
 
-// Add or Update User Details
-export const userProfile = async ({
-  firstName,
-  middleName,
-  lastName,
-  profilePhoto,
-  coverPhoto,
-  userId,
-}: {
-  firstName: string;
-  middleName: string;
-  lastName: string;
-  profilePhoto?: string;
-  coverPhoto?: string;
-  userId: number;
-}): Promise<Profile | null> => {
-  const data = await prisma.profile.upsert({
+export const userDetails = async (
+  id: number
+): Promise<Omit<User, 'password'> | null> => {
+  const user = await prisma.user.findUnique({
     where: {
-      userId,
-    },
-    update: {
-      firstName,
-      middleName,
-      lastName,
-      ...(profilePhoto && { profilePhoto }),
-      ...(coverPhoto && { coverPhoto }),
-    },
-    create: {
-      firstName,
-      middleName,
-      lastName,
-      ...(profilePhoto && { profilePhoto }),
-      ...(coverPhoto && { coverPhoto }),
-      userId,
+      id,
     },
   });
 
-  return data;
-};
+  if (user) {
+    const { password, ...userWithoutPassword } = user;
+    return userWithoutPassword;
+  }
 
-export const getProfile = async (userId: number): Promise<Profile | null> => {
-  const profile = await prisma.profile.findUnique({
-    where: {
-      userId,
-    },
-  });
-
-  return profile;
+  return null;
 };
