@@ -1,11 +1,11 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
-import { userDetails } from '../services/UserServices';
+import { getUser } from '../services/AuthServices';
 import { User } from '@prisma/client';
 
 type UserType = Omit<User, 'password'>;
-export interface CustomRequest extends Request {
-  user: UserType | JwtPayload;
+export interface UserRequest extends Request {
+  user: UserType;
 }
 
 const verifyJwt = async (req: Request, res: Response, next: NextFunction) => {
@@ -13,24 +13,25 @@ const verifyJwt = async (req: Request, res: Response, next: NextFunction) => {
     const token = req.header('Authorization')?.replace('Bearer ', '');
 
     if (!token) {
-      throw new Error();
+      throw new Error('No token');
     }
 
-    const decoded = jwt.verify(token, process.env.SECRET_KEY as string) as
-      | UserType
-      | JwtPayload;
+    const decoded = jwt.verify(
+      token,
+      process.env.SECRET_KEY as string
+    ) as UserType;
 
-    const user = await userDetails(decoded.id);
+    const user = await getUser(decoded.id);
 
     if (!user)
       return res.status(401).json({ message: 'Unauthorized, invalid user' });
 
-    // attach User to the Request
-    (req as CustomRequest).user = decoded as UserType | JwtPayload;
+    // attach user to the Request
+    (req as UserRequest).user = decoded as UserType;
 
     next();
   } catch (error) {
-    res.status(401).json({ message: 'Unauthorize, invalid token' });
+    return res.status(401).json({ message: (error as Error).message });
   }
 };
 

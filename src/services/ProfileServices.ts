@@ -42,10 +42,17 @@ export const newProfile = async ({
   return data;
 };
 
-export const getProfile = async (userId: number): Promise<Profile | null> => {
-  const profile = await prisma.profile.findUnique({
+export const getProfile = async (
+  userId: number
+): Promise<Omit<User, 'password'> & { profile: Profile | null }> => {
+  const profile = await prisma.user.findFirstOrThrow({
     where: {
-      userId,
+      id: userId,
+    },
+    select: {
+      id: true,
+      email: true,
+      profile: true,
     },
   });
 

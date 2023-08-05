@@ -3,7 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 import corsOption from './config/cors';
-import UserRouter from './routes/UserRoutes';
+import AuthRoutes from './routes/AuthRoutes';
 import ProfileRouter from './routes/ProfileRoutes';
 import PostRouter from './routes/PostRoutes';
 import FollowsRouter from './routes/FollowsRoutes';
@@ -16,7 +16,7 @@ app.use(cors(corsOption));
 app.use(express.json());
 
 // api routes
-app.use('/api/user', UserRouter);
+app.use('/api/user', AuthRoutes);
 app.use('/api/profile', ProfileRouter);
 app.use('/api/post', PostRouter);
 app.use('/api/follow', FollowsRouter);

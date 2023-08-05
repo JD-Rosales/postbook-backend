@@ -9,12 +9,7 @@ export const followUser = async ({
   followerId: number;
   followingId: number;
 }): Promise<Follows> => {
-  const isFollowed = await prisma.follows.findFirst({
-    where: {
-      followerId,
-      followingId,
-    },
-  });
+  const isFollowed = await isFollowing({ followerId, followingId });
 
   if (isFollowed) throw new Error(`You're already following this user`);
 
@@ -51,4 +46,22 @@ export const unfollowUser = async ({
   });
 
   return res;
+};
+
+export const isFollowing = async ({
+  followerId,
+  followingId,
+}: {
+  followerId: number;
+  followingId: number;
+}): Promise<boolean> => {
+  const isFollowing = await prisma.follows.findFirst({
+    where: {
+      followerId,
+      followingId,
+    },
+  });
+
+  if (isFollowing) return true;
+  else return false;
 };

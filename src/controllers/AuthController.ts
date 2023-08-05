@@ -1,15 +1,14 @@
 import { Request, Response } from 'express';
 import z from 'zod';
 import bcrypt from 'bcrypt';
-import * as UserServices from '../services/UserServices';
+import * as AuthServices from '../services/AuthServices';
 import validate from '../utils/SchemaValidator';
-import { CustomRequest } from '../middlewares/VerifyToken';
+import { UserRequest } from '../middlewares/VerifyToken';
 import generateToken from '../utils/JwtGenerator';
-import { cloudinary } from '../config/cloudinary';
 
 export const validateToken = async (req: Request, res: Response) => {
   try {
-    const user = (req as CustomRequest).user;
+    const user = (req as UserRequest).user;
 
     return res.status(200).json({ data: user });
   } catch (error) {
@@ -32,20 +31,11 @@ export const login = async (req: Request, res: Response) => {
     if (validator?.errors)
       return res.status(400).json({ message: validator.issues[0].message });
 
-    const user = await UserServices.checkEmail(email);
+    const user = await AuthServices.login(email, password);
 
-    if (!user) return res.status(404).json({ message: 'Account not found' });
+    const token = generateToken(user);
 
-    const auth = await bcrypt.compare(password, user.password);
-    if (!auth) {
-      return res.status(401).json({ message: 'Invalid password' });
-    }
-
-    const { password: _, ...formattedUser } = user;
-
-    const token = generateToken(formattedUser);
-
-    return res.status(200).json({ data: formattedUser, token });
+    return res.status(200).json({ data: user, token });
   } catch (error) {
     return res.status(500).json({ message: (error as Error).message });
   }
@@ -80,15 +70,9 @@ export const register = async (req: Request, res: Response) => {
     if (validator?.errors)
       return res.status(400).json({ message: validator.issues[0].message });
 
-    // hash the password
-    const hashPassword = bcrypt.hashSync(password, 10);
+    const user = await AuthServices.register({ email, password });
 
-    const user = await UserServices.register({ email, password: hashPassword });
-
-    // remove password field
-    const { password: _, ...formattedUser } = user;
-
-    return res.status(200).json({ data: formattedUser });
+    return res.status(200).json({ data: user });
   } catch (error) {
     return res.status(500).json({ message: (error as Error).message });
   }

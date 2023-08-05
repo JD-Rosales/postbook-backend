@@ -1,15 +1,14 @@
 import { Request, Response } from 'express';
 import z from 'zod';
 import * as ProfileServices from '../services/ProfileServices';
-import { userDetails } from '../services/UserServices';
 import validate from '../utils/SchemaValidator';
-import { CustomRequest } from '../middlewares/VerifyToken';
+import { UserRequest } from '../middlewares/VerifyToken';
 import { cloudinary } from '../config/cloudinary';
 
 export const newProfile = async (req: Request, res: Response) => {
   let { firstName, middleName, lastName, profilePhoto, coverPhoto } = req.body;
   try {
-    const userId = (req as CustomRequest).user.id;
+    const userId = (req as UserRequest).user.id;
 
     firstName = firstName?.trim();
     middleName = middleName?.trim();
@@ -51,18 +50,14 @@ export const newProfile = async (req: Request, res: Response) => {
 };
 
 export const getUserProfile = async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
   try {
+    const id = parseInt(req.params.id);
+
     if (!id) return res.status(404).json({ message: 'No user profile found!' });
 
-    const profile = await ProfileServices.getProfile(id);
+    const data = await ProfileServices.getProfile(id);
 
-    if (!profile) {
-      const user = await userDetails(id);
-      return res.status(200).json({ data: user });
-    }
-
-    return res.status(200).json({ data: profile });
+    return res.status(200).json({ data });
   } catch (error) {
     return res.status(500).json({ message: (error as Error).message });
   }
