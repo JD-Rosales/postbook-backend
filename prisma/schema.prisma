@@ -46,6 +46,7 @@ model Profile {
 
 model Post {
   id        Int      @id @default(autoincrement())
+  postType  String
   photo     String?
   text      String?
   createdAt DateTime @default(now())

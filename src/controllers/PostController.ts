@@ -16,9 +16,10 @@ export const fetchFollowed = async (req: Request, res: Response) => {
 };
 
 export const createPost = async (req: Request, res: Response) => {
-  let { text, photo } = req.body;
   try {
+    let { text, photo } = req.body;
     const authorId = (req as UserRequest).user.id;
+    const postType = 'added a new post';
 
     text = text?.trim();
     photo = photo?.trim();
@@ -28,7 +29,12 @@ export const createPost = async (req: Request, res: Response) => {
       return res.status(422).json({ message: 'Cannot create an empty post' });
     }
 
-    const post = await PostServices.createPost({ text, photo, authorId });
+    const post = await PostServices.createPost({
+      postType,
+      text,
+      photo,
+      authorId,
+    });
 
     return res.status(201).json({ data: post });
   } catch (error) {

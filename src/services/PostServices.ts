@@ -3,16 +3,19 @@ import { PrismaClient, Post } from '@prisma/client';
 const prisma = new PrismaClient();
 
 export const createPost = async ({
+  postType,
   photo,
   text,
   authorId,
 }: {
+  postType: string;
   photo?: string;
   text?: string;
   authorId: number;
 }): Promise<Post> => {
   const post = await prisma.post.create({
     data: {
+      postType,
       photo,
       text,
       authorId,
@@ -57,6 +60,21 @@ export const fetchFollowed = async ({
     where: {
       authorId: {
         in: idLists,
+      },
+    },
+    select: {
+      id: true,
+      postType: true,
+      text: true,
+      photo: true,
+      createdAt: true,
+      updatedAt: true,
+      authorId: true,
+      author: {
+        select: {
+          email: true,
+          profile: true,
+        },
       },
     },
     orderBy: {
