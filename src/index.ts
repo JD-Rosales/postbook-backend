@@ -6,7 +6,7 @@ import corsOption from './config/cors';
 import AuthRoutes from './routes/AuthRoutes';
 import ProfileRouter from './routes/ProfileRoutes';
 import PostRouter from './routes/PostRoutes';
-import FollowsRouter from './routes/FollowsRoutes';
+import FollowRouter from './routes/FollowRoutes';
 
 const PORT: number = parseInt(process.env.PORT as string) || 5000;
 const app = express();
@@ -19,7 +19,7 @@ app.use(express.json());
 app.use('/api/user', AuthRoutes);
 app.use('/api/profile', ProfileRouter);
 app.use('/api/post', PostRouter);
-app.use('/api/follow', FollowsRouter);
+app.use('/api/follow', FollowRouter);
 
 app.all('*', (req, res) => {
   res.status(404).send('ROUTE NOT FOUND');

@@ -1,6 +1,13 @@
-import { PrismaClient, Post } from '@prisma/client';
+import { PrismaClient, Post, Profile } from '@prisma/client';
 
 const prisma = new PrismaClient();
+
+type ReturnPost = Post & {
+  author: {
+    email: string;
+    profile?: Profile;
+  };
+};
 
 export const createPost = async ({
   postType,
@@ -25,13 +32,13 @@ export const createPost = async ({
   return post;
 };
 
-export const fetchFollowed = async ({
+export const fetchFollowedPosts = async ({
   selfId,
   myCursor,
 }: {
   selfId: number;
   myCursor?: number;
-}) => {
+}): Promise<Post[]> => {
   const followedUser = await prisma.user.findFirstOrThrow({
     where: {
       id: selfId,
@@ -45,13 +52,13 @@ export const fetchFollowed = async ({
     },
   });
 
-  const idLists = followedUser.following.map((post) => {
+  const idList = followedUser.following.map((post) => {
     return post.followingId;
   });
 
   const posts = await prisma.post.findMany({
     skip: myCursor ? 1 : 0,
-    take: 3,
+    take: 2,
     ...(myCursor && {
       cursor: {
         id: myCursor,
@@ -59,8 +66,49 @@ export const fetchFollowed = async ({
     }),
     where: {
       authorId: {
-        in: idLists,
+        in: idList,
       },
+    },
+    select: {
+      id: true,
+      postType: true,
+      text: true,
+      photo: true,
+      createdAt: true,
+      updatedAt: true,
+      authorId: true,
+      author: {
+        select: {
+          email: true,
+          profile: true,
+        },
+      },
+    },
+    orderBy: {
+      updatedAt: 'desc',
+    },
+  });
+
+  return posts;
+};
+
+export const fetchUserPosts = async ({
+  userId,
+  myCursor,
+}: {
+  userId: number;
+  myCursor?: number;
+}): Promise<Post[]> => {
+  const posts = await prisma.post.findMany({
+    skip: myCursor ? 1 : 0,
+    take: 2,
+    ...(myCursor && {
+      cursor: {
+        id: myCursor,
+      },
+    }),
+    where: {
+      authorId: userId,
     },
     select: {
       id: true,
