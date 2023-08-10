@@ -50,38 +50,28 @@ export const unfollowUser = async ({
 
   return res;
 };
-
 export const myFollowers = async (
   userId: number
 ): Promise<Omit<User, 'password'>[]> => {
-  const userFollowers = await prisma.user.findFirstOrThrow({
+  const userFollowers = await prisma.follow.findMany({
     where: {
-      id: userId,
+      followingId: userId,
+    },
+    orderBy: {
+      createdAt: 'desc',
     },
     select: {
-      followers: {
+      follower: {
         select: {
-          followerId: true,
+          id: true,
+          email: true,
+          profile: true,
         },
       },
     },
   });
 
-  const idList = userFollowers.followers.map((user) => user.followerId);
-
-  const followers = await prisma.user.findMany({
-    where: {
-      id: {
-        in: idList,
-      },
-    },
-    select: {
-      id: true,
-      email: true,
-      profile: true,
-    },
-  });
-
+  const followers = userFollowers.map((userFollow) => userFollow.follower);
   return followers;
 };
 
