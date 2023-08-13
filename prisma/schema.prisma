@@ -54,8 +54,10 @@ model Post {
   updatedAt          DateTime @updatedAt
   author             User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId           Int
-  sharedPost         Post[]   @relation("sharedPost")
+  sharedPost         Post?    @relation("sharedPost", fields: [sharedPostId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  sharedPostId       Int?
   sharedPostRelation Post[]   @relation("sharedPost")
 
   @@index([authorId])
+  @@index([sharedPostId])
 }

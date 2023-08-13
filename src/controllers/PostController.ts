@@ -42,7 +42,6 @@ export const createPost = async (req: Request, res: Response) => {
   try {
     let { text, photo } = req.body;
     const authorId = (req as UserRequest).user.id;
-    const postType = 'posted';
 
     text = text?.trim();
     photo = photo?.trim();
@@ -53,7 +52,6 @@ export const createPost = async (req: Request, res: Response) => {
     }
 
     const post = await PostServices.createPost({
-      postType,
       text,
       photo,
       authorId,
@@ -82,9 +80,9 @@ export const sharePost = async (req: Request, res: Response) => {
     if (validator?.errors)
       return res.status(400).json({ message: validator.issues[0].message });
 
-    // const post = await PostServices.sharePost({ text, postId, authorId });
+    const post = await PostServices.sharedPost({ text, postId, authorId });
 
-    // return res.status(201).json({ data: post });
+    return res.status(201).json({ data: post });
   } catch (error) {
     return res.status(500).json({ message: (error as Error).message });
   }

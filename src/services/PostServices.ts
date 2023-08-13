@@ -2,27 +2,18 @@ import { PrismaClient, Post, Profile } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-type ReturnPost = Post & {
-  author: {
-    email: string;
-    profile?: Profile;
-  };
-};
-
 export const createPost = async ({
-  postType,
   photo,
   text,
   authorId,
 }: {
-  postType: string;
   photo?: string;
   text?: string;
   authorId: number;
 }): Promise<Post> => {
   const post = await prisma.post.create({
     data: {
-      postType,
+      postType: 'posted',
       photo,
       text,
       authorId,
@@ -83,6 +74,24 @@ export const fetchFollowedPosts = async ({
           profile: true,
         },
       },
+      sharedPost: {
+        select: {
+          id: true,
+          postType: true,
+          text: true,
+          photo: true,
+          createdAt: true,
+          updatedAt: true,
+          authorId: true,
+          author: {
+            select: {
+              email: true,
+              profile: true,
+            },
+          },
+        },
+      },
+      sharedPostId: true,
     },
     orderBy: {
       updatedAt: 'desc',
@@ -124,6 +133,24 @@ export const fetchUserPosts = async ({
           profile: true,
         },
       },
+      sharedPost: {
+        select: {
+          id: true,
+          postType: true,
+          text: true,
+          photo: true,
+          createdAt: true,
+          updatedAt: true,
+          authorId: true,
+          author: {
+            select: {
+              email: true,
+              profile: true,
+            },
+          },
+        },
+      },
+      sharedPostId: true,
     },
     orderBy: {
       updatedAt: 'desc',
@@ -131,4 +158,45 @@ export const fetchUserPosts = async ({
   });
 
   return posts;
+};
+
+export const sharedPost = async ({
+  text,
+  postId,
+  authorId,
+}: {
+  text?: string;
+  postId: number;
+  authorId: number;
+}): Promise<Post> => {
+  const originalPost = await prisma.post.findUnique({
+    where: {
+      id: postId,
+    },
+  });
+
+  if (!originalPost) {
+    throw new Error('Original post not found');
+  }
+
+  const post = await prisma.post.create({
+    data: {
+      postType: 'shared a post',
+      text,
+      authorId,
+      sharedPostId: originalPost.id,
+    },
+  });
+
+  return post;
+};
+
+export const getPost = async (postId: number): Promise<Post> => {
+  const post = await prisma.post.findUniqueOrThrow({
+    where: {
+      id: postId,
+    },
+  });
+
+  return post;
 };
