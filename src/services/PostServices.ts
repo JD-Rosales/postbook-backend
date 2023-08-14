@@ -191,10 +191,26 @@ export const sharedPost = async ({
   return post;
 };
 
-export const getPost = async (postId: number): Promise<Post> => {
-  const post = await prisma.post.findUniqueOrThrow({
+export const getPost = async (postId: number): Promise<Post | null> => {
+  const post = await prisma.post.findUnique({
     where: {
       id: postId,
+    },
+    select: {
+      id: true,
+      postType: true,
+      text: true,
+      photo: true,
+      createdAt: true,
+      updatedAt: true,
+      authorId: true,
+      author: {
+        select: {
+          email: true,
+          profile: true,
+        },
+      },
+      sharedPostId: true,
     },
   });
 

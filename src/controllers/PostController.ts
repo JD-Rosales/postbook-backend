@@ -8,7 +8,6 @@ export const fetchUserPosts = async (req: Request, res: Response) => {
   try {
     const userId = parseInt(req.params.id);
     const cursor = Number(req.query.cursor);
-
     if (!userId) throw new Error('Cannot find user posts');
 
     const data = await PostServices.fetchUserPosts({
@@ -83,6 +82,20 @@ export const sharePost = async (req: Request, res: Response) => {
     const post = await PostServices.sharedPost({ text, postId, authorId });
 
     return res.status(201).json({ data: post });
+  } catch (error) {
+    return res.status(500).json({ message: (error as Error).message });
+  }
+};
+
+export const getPost = async (req: Request, res: Response) => {
+  try {
+    const postId = parseInt(req.params.id);
+
+    const post = await PostServices.getPost(postId);
+
+    if (!post) return res.status(404).json({ message: 'No post found' });
+
+    return res.status(200).json({ data: post });
   } catch (error) {
     return res.status(500).json({ message: (error as Error).message });
   }
