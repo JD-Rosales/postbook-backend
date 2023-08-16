@@ -88,7 +88,7 @@ export const createPost = async (req: Request, res: Response) => {
 
 export const sharePost = async (req: Request, res: Response) => {
   try {
-    let { text, postId } = req.body;
+    const { text, postId } = req.body;
     const authorId = (req as UserRequest).user.id;
 
     const Schema = z.object({
@@ -108,7 +108,7 @@ export const sharePost = async (req: Request, res: Response) => {
 
     const validated = Schema.parse({ text, postId, authorId });
 
-    const post = await PostServices.sharedPost(validated);
+    const post = await PostServices.sharePost(validated);
 
     return res.status(201).json({ data: post });
   } catch (error) {
@@ -139,18 +139,24 @@ export const getPost = async (req: Request, res: Response) => {
 
 export const deletePost = async (req: Request, res: Response) => {
   try {
-    const postId = parseInt(req.params.id);
-
+    const postId = req.params.id;
+    const authorId = (req as UserRequest).user.id;
     const Schema = z.object({
-      postId: z.number({
-        required_error: 'Post ID is required',
-        invalid_type_error: 'Post ID is not a valid ID',
+      postId: z
+        .string({
+          required_error: 'Post ID is required',
+          invalid_type_error: 'Post ID is not a valid ID',
+        })
+        .transform((value) => parseInt(value)),
+      authorId: z.number({
+        required_error: 'Author ID is required',
+        invalid_type_error: 'Author ID is not a valid ID',
       }),
     });
 
-    const validated = Schema.parse({ postId });
+    const validated = Schema.parse({ postId, authorId });
 
-    const post = await PostServices.deletePost(validated.postId);
+    const post = await PostServices.deletePost(validated);
 
     // after deleting the post in database, delete the post photo in cloudinary
     if (post.photo) {

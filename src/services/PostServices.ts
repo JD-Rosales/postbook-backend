@@ -163,7 +163,7 @@ export const fetchUserPosts = async ({
   return posts;
 };
 
-export const sharedPost = async ({
+export const sharePost = async ({
   text,
   postId,
   authorId,
@@ -222,7 +222,13 @@ export const getPost = async (postId: number): Promise<Post> => {
   return post;
 };
 
-export const deletePost = async (postId: number): Promise<Post> => {
+export const deletePost = async ({
+  postId,
+  authorId,
+}: {
+  postId: number;
+  authorId: number;
+}): Promise<Post> => {
   const post = await prisma.post.findUnique({
     where: {
       id: postId,
@@ -230,6 +236,9 @@ export const deletePost = async (postId: number): Promise<Post> => {
   });
 
   if (!post) throw new CustomeError(404, 'Cannot find post');
+
+  if (post.authorId !== authorId)
+    throw new CustomeError(401, 'Cannot delete post that is not yours');
 
   const deletedPost = await prisma.post.delete({
     where: {
