@@ -1,4 +1,5 @@
 import { PrismaClient, Post, Profile } from '@prisma/client';
+import CustomeError from '../utils/CustomeError';
 
 const prisma = new PrismaClient();
 
@@ -30,7 +31,7 @@ export const fetchFollowedPosts = async ({
   selfId: number;
   myCursor?: number;
 }): Promise<Post[]> => {
-  const followedUser = await prisma.user.findFirstOrThrow({
+  const followedUser = await prisma.user.findFirst({
     where: {
       id: selfId,
     },
@@ -42,6 +43,8 @@ export const fetchFollowedPosts = async ({
       },
     },
   });
+
+  if (!followedUser) throw new CustomeError(404, 'User not found');
 
   const idList = followedUser.following.map((post) => {
     return post.followingId;
@@ -176,7 +179,7 @@ export const sharedPost = async ({
   });
 
   if (!originalPost) {
-    throw new Error('Original post not found');
+    throw new CustomeError(404, 'Original post not found');
   }
 
   const post = await prisma.post.create({
@@ -191,7 +194,7 @@ export const sharedPost = async ({
   return post;
 };
 
-export const getPost = async (postId: number): Promise<Post | null> => {
+export const getPost = async (postId: number): Promise<Post> => {
   const post = await prisma.post.findUnique({
     where: {
       id: postId,
@@ -214,5 +217,25 @@ export const getPost = async (postId: number): Promise<Post | null> => {
     },
   });
 
+  if (!post) throw new CustomeError(404, 'No post found');
+
   return post;
+};
+
+export const deletePost = async (postId: number): Promise<Post> => {
+  const post = await prisma.post.findUnique({
+    where: {
+      id: postId,
+    },
+  });
+
+  if (!post) throw new CustomeError(404, 'Cannot find post');
+
+  const deletedPost = await prisma.post.delete({
+    where: {
+      id: post.id,
+    },
+  });
+
+  return deletedPost;
 };

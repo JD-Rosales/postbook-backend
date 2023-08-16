@@ -12,7 +12,7 @@ export const newProfile = async ({
   userId,
 }: {
   firstName: string;
-  middleName: string;
+  middleName?: string;
   lastName: string;
   profilePhoto?: string;
   coverPhoto?: string;

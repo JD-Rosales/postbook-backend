@@ -1,21 +1,22 @@
 import { PrismaClient, Follow, User } from '@prisma/client';
+import CustomeError from '../utils/CustomeError';
 
 const prisma = new PrismaClient();
 
 export const followUser = async ({
-  followerId,
+  selfId,
   followingId,
 }: {
-  followerId: number;
+  selfId: number;
   followingId: number;
 }): Promise<Follow> => {
-  const isFollowed = await isFollowing({ followerId, followingId });
+  const isFollowed = await isFollowing({ selfId, followingId });
 
   if (isFollowed) throw new Error(`You're already following this user`);
 
   const follow = await prisma.follow.create({
     data: {
-      followerId,
+      followerId: selfId,
       followingId,
     },
   });
@@ -24,20 +25,20 @@ export const followUser = async ({
 };
 
 export const unfollowUser = async ({
-  followerId,
+  selfId,
   followingId,
 }: {
-  followerId: number;
+  selfId: number;
   followingId: number;
 }): Promise<Follow> => {
   const followData = await prisma.follow.findFirst({
     where: {
-      followerId,
+      followerId: selfId,
       followingId,
     },
   });
 
-  if (!followData) throw new Error('Cannot find followed user');
+  if (!followData) throw new CustomeError(404, 'Cannot find followed user');
 
   const res = await prisma.follow.delete({
     where: {
@@ -76,15 +77,15 @@ export const myFollowers = async (
 };
 
 export const isFollowing = async ({
-  followerId,
+  selfId,
   followingId,
 }: {
-  followerId: number;
+  selfId: number;
   followingId: number;
 }): Promise<boolean> => {
   const isFollowing = await prisma.follow.findFirst({
     where: {
-      followerId,
+      followerId: selfId,
       followingId,
     },
   });

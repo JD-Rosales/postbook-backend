@@ -2,6 +2,7 @@ require('dotenv').config();
 import express from 'express';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
+import ErrorHandler from './middlewares/ErrorHandler';
 import corsOption from './config/cors';
 import AuthRoutes from './routes/AuthRoutes';
 import ProfileRouter from './routes/ProfileRoutes';

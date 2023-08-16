@@ -2,30 +2,28 @@ import { Request, Response } from 'express';
 import { UserRequest } from '../middlewares/VerifyToken';
 import * as FollowService from '../services/FollowServices';
 import z from 'zod';
-import validate from '../utils/SchemaValidator';
 
 export const followUser = async (req: Request, res: Response) => {
   try {
-    const followerId = (req as UserRequest).user.id;
+    const selfId = (req as UserRequest).user.id;
     const { followingId } = req.body;
 
-    // validate data
-    const inputSchema = z
+    const Schema = z
       .object({
-        followerId: z.number({ required_error: 'Follower ID is required' }),
-        followingId: z.number({ required_error: 'Following ID is required' }),
+        selfId: z.number({ required_error: 'User ID is required' }),
+        followingId: z.number({
+          required_error: 'Followed user ID is required',
+          invalid_type_error: 'Followed user ID is not a valid ID',
+        }),
       })
-      .refine((data) => data.followerId !== data.followingId, {
+      .refine((data) => data.selfId !== data.followingId, {
         message: 'Are you high? you cannot follow yourself',
         path: ['followingId'],
       });
 
-    const validator = validate(inputSchema, { followerId, followingId });
+    const validated = Schema.parse({ selfId, followingId });
 
-    if (validator?.errors)
-      return res.status(400).json({ message: validator.issues[0].message });
-
-    const data = await FollowService.followUser({ followerId, followingId });
+    const data = await FollowService.followUser(validated);
 
     return res.status(200).json({ data });
   } catch (error) {
@@ -35,24 +33,20 @@ export const followUser = async (req: Request, res: Response) => {
 
 export const unfollowUser = async (req: Request, res: Response) => {
   try {
-    const followerId = (req as UserRequest).user.id;
+    const selfId = (req as UserRequest).user.id;
     const { followingId } = req.body;
 
-    // validate data
-    const inputSchema = z.object({
-      followerId: z.number({ required_error: 'Follower ID is required' }),
-      followingId: z.number({ required_error: 'Following ID is required' }),
+    const Schema = z.object({
+      selfId: z.number({ required_error: 'User ID is required' }),
+      followingId: z.number({
+        required_error: 'Followed user ID is required',
+        invalid_type_error: 'Followed user ID is not a valid ID',
+      }),
     });
 
-    const validator = validate(inputSchema, { followerId, followingId });
+    const validated = Schema.parse({ selfId, followingId });
 
-    if (validator?.errors)
-      return res.status(400).json({ message: validator.issues[0].message });
-
-    const data = await FollowService.unfollowUser({
-      followerId,
-      followingId,
-    });
+    const data = await FollowService.unfollowUser(validated);
 
     return res.status(202).json({ data });
   } catch (error) {
@@ -62,24 +56,22 @@ export const unfollowUser = async (req: Request, res: Response) => {
 
 export const isFollowing = async (req: Request, res: Response) => {
   try {
-    const followerId = (req as UserRequest).user.id;
-    const followingId = parseInt(req.params.id);
+    const selfId = (req as UserRequest).user.id;
+    const followingId = req.params.id;
 
-    // validate data
-    const inputSchema = z.object({
-      followerId: z.number({ required_error: 'Follower ID is required' }),
-      followingId: z.number({ required_error: 'Following ID is required' }),
+    const Schema = z.object({
+      selfId: z.number({ required_error: 'User ID is required' }),
+      followingId: z
+        .string({
+          required_error: 'Followed user ID is required',
+          invalid_type_error: 'Followed user ID is not a valid ID',
+        })
+        .transform((value) => parseInt(value)),
     });
 
-    const validator = validate(inputSchema, { followerId, followingId });
+    const validated = Schema.parse({ selfId, followingId });
 
-    if (validator?.errors)
-      return res.status(400).json({ message: validator.issues[0].message });
-
-    const data = await FollowService.isFollowing({
-      followerId,
-      followingId,
-    });
+    const data = await FollowService.isFollowing(validated);
 
     return res.status(200).json({ data });
   } catch (error) {
@@ -89,19 +81,20 @@ export const isFollowing = async (req: Request, res: Response) => {
 
 export const userFollowers = async (req: Request, res: Response) => {
   try {
-    const userId = parseInt(req.params.id);
+    const userId = req.params.id;
 
-    // validate data
-    const inputSchema = z.object({
-      userId: z.number({ required_error: 'User ID is required' }),
+    const Schema = z.object({
+      userId: z
+        .string({
+          required_error: 'User ID is required',
+          invalid_type_error: 'User ID is not a valid ID',
+        })
+        .transform((value) => parseInt(value)),
     });
 
-    const validator = validate(inputSchema, { userId });
+    const validated = Schema.parse({ userId });
 
-    if (validator?.errors)
-      return res.status(400).json({ message: validator.issues[0].message });
-
-    const followers = await FollowService.myFollowers(userId);
+    const followers = await FollowService.myFollowers(validated.userId);
 
     return res.status(200).json({ data: followers });
   } catch (error) {

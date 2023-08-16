@@ -1,12 +1,16 @@
 import { PrismaClient, User } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import CustomeError from '../utils/CustomeError';
 
 const prisma = new PrismaClient();
 
-export const login = async (
-  email: string,
-  password: string
-): Promise<Omit<User, 'password'>> => {
+export const login = async ({
+  email,
+  password,
+}: {
+  email: string;
+  password: string;
+}): Promise<Omit<User, 'password'>> => {
   const user = await prisma.user.findFirstOrThrow({
     where: {
       email,
@@ -14,7 +18,7 @@ export const login = async (
   });
 
   const passwordMatch = await bcrypt.compareSync(password, user.password);
-  if (!passwordMatch) throw new Error('Invalid email or password');
+  if (!passwordMatch) throw new CustomeError(401, 'Invalid email or password');
 
   const parseUser = {
     id: user.id,
@@ -37,7 +41,7 @@ export const register = async ({
     },
   });
 
-  if (isRegistered) throw new Error('Email is already registered');
+  if (isRegistered) throw new CustomeError(409, 'Email is already registered');
 
   // hash the password
   const hashPassword = bcrypt.hashSync(password, 10);

@@ -1,47 +1,44 @@
 import { Request, Response } from 'express';
 import z from 'zod';
 import * as ProfileServices from '../services/ProfileServices';
-import validate from '../utils/SchemaValidator';
 import { UserRequest } from '../middlewares/VerifyToken';
 import { cloudinary } from '../config/cloudinary';
+import errHandler from '../middlewares/ErrorHandler';
 
 export const newProfile = async (req: Request, res: Response) => {
-  let { firstName, middleName, lastName, profilePhoto, coverPhoto } = req.body;
   try {
+    const { firstName, middleName, lastName, profilePhoto, coverPhoto } =
+      req.body;
     const userId = (req as UserRequest).user.id;
 
-    firstName = firstName?.trim();
-    middleName = middleName?.trim();
-    lastName = lastName?.trim();
-
-    // validate data
-    const inputSchema = z.object({
+    const Schema = z.object({
+      userId: z.number({ required_error: 'User ID is required' }),
       firstName: z
         .string({ required_error: 'First name is required' })
-        .min(1, 'First name is required'),
+        .min(1, 'First name is required')
+        .transform((value) => value.trim()),
+      middleName: z
+        .string()
+        .transform((value) => value.trim())
+        .optional(),
       lastName: z
         .string({ required_error: 'Last name is required' })
-        .min(1, 'Last name is required'),
-      userId: z.number({ required_error: 'User ID is missing' }),
+        .min(1, 'Last name is required')
+        .transform((value) => value.trim()),
+      profilePhoto: z.string().optional(),
+      coverPhoto: z.string().optional(),
     });
 
-    const validator = validate(inputSchema, {
-      firstName,
-      lastName,
+    const validated = Schema.parse({
       userId,
-    });
-
-    if (validator?.errors)
-      return res.status(400).json({ message: validator.issues[0].message });
-
-    const userDetails = await ProfileServices.newProfile({
       firstName,
       middleName,
       lastName,
       profilePhoto,
       coverPhoto,
-      userId,
     });
+
+    const userDetails = await ProfileServices.newProfile(validated);
 
     return res.status(200).json({ data: userDetails });
   } catch (error) {
@@ -51,19 +48,28 @@ export const newProfile = async (req: Request, res: Response) => {
 
 export const getUserProfile = async (req: Request, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
+    const userId = req.params.id;
 
-    if (!id) return res.status(404).json({ message: 'No user profile found!' });
+    const Schema = z.object({
+      userId: z
+        .string({
+          required_error: 'User ID is required',
+          invalid_type_error: 'User ID is not a valid ID',
+        })
+        .transform((value) => parseInt(value)),
+    });
 
-    const data = await ProfileServices.getProfile(id);
+    const validated = Schema.parse({ userId });
+
+    const data = await ProfileServices.getProfile(validated.userId);
 
     return res.status(200).json({ data });
   } catch (error) {
-    return res.status(500).json({ message: (error as Error).message });
+    errHandler(error, res);
   }
 };
 
-// test
+// test 39965
 export const testImageUpload = async (req: Request, res: Response) => {
   try {
     const imgUploader = await cloudinary.uploader.upload(
@@ -79,6 +85,6 @@ export const testImageUpload = async (req: Request, res: Response) => {
 
     return res.status(200).json({ data: imgUploader });
   } catch (error) {
-    return res.status(500).json({ message: (error as Error).message });
+    errHandler(error, res);
   }
 };
