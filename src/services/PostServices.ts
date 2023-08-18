@@ -4,18 +4,23 @@ import CustomeError from '../utils/CustomeError';
 const prisma = new PrismaClient();
 
 export const createPost = async ({
+  postType = 'posted',
   photo,
+  photoPublicId,
   text,
   authorId,
 }: {
+  postType?: string;
   photo?: string;
+  photoPublicId?: string;
   text?: string;
   authorId: number;
 }): Promise<Post> => {
   const post = await prisma.post.create({
     data: {
-      postType: 'posted',
+      postType,
       photo,
+      photoPublicId,
       text,
       authorId,
     },
@@ -30,7 +35,7 @@ export const fetchFollowedPosts = async ({
 }: {
   selfId: number;
   myCursor?: number;
-}): Promise<Post[]> => {
+}) => {
   const followedUser = await prisma.user.findFirst({
     where: {
       id: selfId,
@@ -95,6 +100,7 @@ export const fetchFollowedPosts = async ({
         },
       },
       sharedPostId: true,
+      likesCount: true,
     },
     orderBy: {
       updatedAt: 'desc',
@@ -110,7 +116,7 @@ export const fetchUserPosts = async ({
 }: {
   userId: number;
   myCursor?: number;
-}): Promise<Post[]> => {
+}) => {
   const posts = await prisma.post.findMany({
     skip: myCursor ? 1 : 0,
     take: 2,
@@ -154,6 +160,7 @@ export const fetchUserPosts = async ({
         },
       },
       sharedPostId: true,
+      likesCount: true,
     },
     orderBy: {
       updatedAt: 'desc',
@@ -194,7 +201,7 @@ export const sharePost = async ({
   return post;
 };
 
-export const getPost = async (postId: number): Promise<Post> => {
+export const getPost = async (postId: number) => {
   const post = await prisma.post.findUnique({
     where: {
       id: postId,
@@ -214,6 +221,7 @@ export const getPost = async (postId: number): Promise<Post> => {
         },
       },
       sharedPostId: true,
+      likesCount: true,
     },
   });
 
@@ -247,4 +255,19 @@ export const deletePost = async ({
   });
 
   return deletedPost;
+};
+
+export const getTotalLikes = async (postId: number) => {
+  const total = await prisma.post.findUnique({
+    where: {
+      id: postId,
+    },
+    select: {
+      likesCount: true,
+    },
+  });
+
+  if (!total) throw new CustomeError(404, 'Cannot find post');
+
+  return total;
 };

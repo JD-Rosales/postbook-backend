@@ -3,6 +3,7 @@ import { ZodError } from 'zod';
 import CustomeError from '../utils/CustomeError';
 
 const errHandler = (error: unknown, res: Response) => {
+  console.log('error: ', error);
   if (error instanceof CustomeError)
     return res.status(error.statusCode).json({ message: error.message });
   else if (error instanceof ZodError)

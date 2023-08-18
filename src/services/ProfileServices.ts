@@ -8,16 +8,20 @@ export const newProfile = async ({
   middleName,
   lastName,
   profilePhoto,
+  profilePublicId,
   coverPhoto,
+  coverPublicId,
   userId,
 }: {
   firstName: string;
   middleName?: string;
   lastName: string;
   profilePhoto?: string;
+  profilePublicId?: string;
   coverPhoto?: string;
+  coverPublicId?: string;
   userId: number;
-}): Promise<Profile> => {
+}) => {
   const data = await prisma.profile.upsert({
     where: {
       userId,
@@ -27,14 +31,18 @@ export const newProfile = async ({
       middleName,
       lastName,
       ...(profilePhoto && { profilePhoto }),
+      ...(profilePublicId && { profilePublicId }),
       ...(coverPhoto && { coverPhoto }),
+      ...(coverPublicId && { coverPublicId }),
     },
     create: {
       firstName,
       middleName,
       lastName,
       ...(profilePhoto && { profilePhoto }),
+      ...(profilePublicId && { profilePublicId }),
       ...(coverPhoto && { coverPhoto }),
+      ...(coverPublicId && { coverPublicId }),
       userId,
     },
   });

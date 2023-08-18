@@ -3,6 +3,7 @@ import z from 'zod';
 import { UserRequest } from '../middlewares/VerifyToken';
 import * as PostServices from '../services/PostServices';
 import errHandler from '../middlewares/ErrorHandler';
+import { cloudinary } from '../config/cloudinary';
 
 export const fetchUserPosts = async (req: Request, res: Response) => {
   try {
@@ -54,7 +55,7 @@ export const fetchFollowed = async (req: Request, res: Response) => {
 
 export const createPost = async (req: Request, res: Response) => {
   try {
-    const { text, photo } = req.body;
+    const { text, photo, photoPublicId } = req.body;
     const authorId = (req as UserRequest).user.id;
 
     // validate data
@@ -68,7 +69,10 @@ export const createPost = async (req: Request, res: Response) => {
         .optional()
         .transform((value) => value?.trim()),
       photo: z
-        .string({ invalid_type_error: 'text must be a string' })
+        .string({ invalid_type_error: 'photo must be a string' })
+        .optional(),
+      photoPublicId: z
+        .string({ invalid_type_error: 'photoPublicId must be a string' })
         .optional(),
       authorId: z.number({
         required_error: 'Author ID is required',
@@ -76,7 +80,7 @@ export const createPost = async (req: Request, res: Response) => {
       }),
     });
 
-    const validated = Schema.parse({ text, photo, authorId });
+    const validated = Schema.parse({ text, photo, photoPublicId, authorId });
 
     const post = await PostServices.createPost(validated);
 
@@ -159,11 +163,34 @@ export const deletePost = async (req: Request, res: Response) => {
     const post = await PostServices.deletePost(validated);
 
     // after deleting the post in database, delete the post photo in cloudinary
-    if (post.photo) {
-      // delete photo here
+    if (post.photoPublicId) {
+      const img = await cloudinary.uploader.destroy(post.photoPublicId);
     }
 
     return res.status(200).json({ data: post });
+  } catch (error) {
+    errHandler(error, res);
+  }
+};
+
+export const getTotalLikes = async (req: Request, res: Response) => {
+  try {
+    const postId = req.params.id;
+
+    const Schema = z.object({
+      postId: z
+        .string({
+          required_error: 'Post ID is required',
+          invalid_type_error: 'Post ID is not a valid ID',
+        })
+        .transform((value) => parseInt(value)),
+    });
+
+    const validated = Schema.parse({ postId });
+
+    const likes = await PostServices.getTotalLikes(validated.postId);
+
+    return res.status(200).json({ data: likes });
   } catch (error) {
     errHandler(error, res);
   }

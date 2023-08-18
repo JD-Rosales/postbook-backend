@@ -11,11 +11,13 @@ export const login = async ({
   email: string;
   password: string;
 }): Promise<Omit<User, 'password'>> => {
-  const user = await prisma.user.findFirstOrThrow({
+  const user = await prisma.user.findFirst({
     where: {
       email,
     },
   });
+
+  if (!user) throw new CustomeError(401, 'Invalid email or password');
 
   const passwordMatch = await bcrypt.compareSync(password, user.password);
   if (!passwordMatch) throw new CustomeError(401, 'Invalid email or password');
