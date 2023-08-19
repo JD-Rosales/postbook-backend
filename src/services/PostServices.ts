@@ -257,7 +257,13 @@ export const deletePost = async ({
   return deletedPost;
 };
 
-export const getTotalLikes = async (postId: number) => {
+export const getTotalLikes = async ({
+  postId,
+  userId,
+}: {
+  postId: number;
+  userId: number;
+}) => {
   const total = await prisma.post.findUnique({
     where: {
       id: postId,
@@ -269,5 +275,80 @@ export const getTotalLikes = async (postId: number) => {
 
   if (!total) throw new CustomeError(404, 'Cannot find post');
 
-  return total;
+  const hasLike = await isPostLiked({ postId, userId });
+
+  return {
+    likesCount: total.likesCount,
+    userHasLiked: hasLike,
+  };
+};
+
+export const updatePostLike = async ({
+  postId,
+  userId,
+}: {
+  postId: number;
+  userId: number;
+}) => {
+  // get the post to make sure the post exist
+  const post = getPost(postId);
+
+  const isLiked = await isPostLiked({ postId, userId });
+
+  if (!isLiked) {
+    await prisma.postLike
+      .create({
+        data: {
+          postId,
+          userId,
+        },
+      })
+      .then((postLike) => {
+        updateLikesCount(postLike.postId, 'increment');
+      });
+  } else {
+    await prisma.postLike
+      .delete({
+        where: {
+          postId_userId: { postId, userId },
+        },
+      })
+      .then((postLike) => {
+        updateLikesCount(postLike.postId, 'decrement');
+      });
+  }
+
+  return post;
+};
+
+// --------  ------- //
+const isPostLiked = async ({
+  postId,
+  userId,
+}: {
+  postId: number;
+  userId: number;
+}): Promise<boolean> => {
+  const isLiked = await prisma.postLike.findUnique({
+    where: {
+      postId_userId: { postId, userId },
+    },
+  });
+
+  if (isLiked) return true;
+  else return false;
+};
+
+const updateLikesCount = async (
+  postId: number,
+  action: 'increment' | 'decrement'
+) => {
+  await prisma.post.update({
+    where: {
+      id: postId,
+    },
+    data: {
+      likesCount: action === 'increment' ? { increment: 1 } : { decrement: 1 },
+    },
+  });
 };

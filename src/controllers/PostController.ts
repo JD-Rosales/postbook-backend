@@ -173,9 +173,23 @@ export const deletePost = async (req: Request, res: Response) => {
   }
 };
 
+export const likePost = async (req: Request, res: Response) => {
+  try {
+    const { postId } = req.body;
+    const userId = (req as UserRequest).user.id;
+
+    const post = await PostServices.updatePostLike({ postId, userId });
+
+    return res.status(201).json({ data: post });
+  } catch (error) {
+    errHandler(error, res);
+  }
+};
+
 export const getTotalLikes = async (req: Request, res: Response) => {
   try {
     const postId = req.params.id;
+    const userId = (req as UserRequest).user.id;
 
     const Schema = z.object({
       postId: z
@@ -184,13 +198,17 @@ export const getTotalLikes = async (req: Request, res: Response) => {
           invalid_type_error: 'Post ID is not a valid ID',
         })
         .transform((value) => parseInt(value)),
+      userId: z.number({
+        required_error: 'User ID is required',
+        invalid_type_error: 'User ID is not a valid ID',
+      }),
     });
 
-    const validated = Schema.parse({ postId });
+    const validated = Schema.parse({ postId, userId });
 
-    const likes = await PostServices.getTotalLikes(validated.postId);
+    const data = await PostServices.getTotalLikes(validated);
 
-    return res.status(200).json({ data: likes });
+    return res.status(200).json({ data });
   } catch (error) {
     errHandler(error, res);
   }
