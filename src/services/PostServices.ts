@@ -70,37 +70,6 @@ export const fetchFollowedPosts = async ({
     },
     select: {
       id: true,
-      postType: true,
-      text: true,
-      photo: true,
-      createdAt: true,
-      updatedAt: true,
-      authorId: true,
-      author: {
-        select: {
-          email: true,
-          profile: true,
-        },
-      },
-      sharedPost: {
-        select: {
-          id: true,
-          postType: true,
-          text: true,
-          photo: true,
-          createdAt: true,
-          updatedAt: true,
-          authorId: true,
-          author: {
-            select: {
-              email: true,
-              profile: true,
-            },
-          },
-        },
-      },
-      sharedPostId: true,
-      likesCount: true,
     },
     orderBy: {
       createdAt: 'desc',
@@ -130,37 +99,6 @@ export const fetchUserPosts = async ({
     },
     select: {
       id: true,
-      postType: true,
-      text: true,
-      photo: true,
-      createdAt: true,
-      updatedAt: true,
-      authorId: true,
-      author: {
-        select: {
-          email: true,
-          profile: true,
-        },
-      },
-      sharedPost: {
-        select: {
-          id: true,
-          postType: true,
-          text: true,
-          photo: true,
-          createdAt: true,
-          updatedAt: true,
-          authorId: true,
-          author: {
-            select: {
-              email: true,
-              profile: true,
-            },
-          },
-        },
-      },
-      sharedPostId: true,
-      likesCount: true,
     },
     orderBy: {
       createdAt: 'desc',
