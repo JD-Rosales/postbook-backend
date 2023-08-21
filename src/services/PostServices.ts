@@ -154,11 +154,34 @@ export const getPost = async (postId: number) => {
       authorId: true,
       author: {
         select: {
+          id: true,
           email: true,
           profile: true,
         },
       },
       sharedPostId: true,
+      sharedPost: {
+        select: {
+          author: {
+            select: {
+              id: true,
+              email: true,
+              profile: {
+                select: {
+                  profilePhoto: true,
+                  firstName: true,
+                  middleName: true,
+                  lastName: true,
+                },
+              },
+            },
+          },
+          postType: true,
+          createdAt: true,
+          text: true,
+          photo: true,
+        },
+      },
       likesCount: true,
     },
   });
