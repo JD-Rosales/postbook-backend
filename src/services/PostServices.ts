@@ -103,7 +103,7 @@ export const fetchFollowedPosts = async ({
       likesCount: true,
     },
     orderBy: {
-      updatedAt: 'desc',
+      createdAt: 'desc',
     },
   });
 
@@ -163,7 +163,7 @@ export const fetchUserPosts = async ({
       likesCount: true,
     },
     orderBy: {
-      updatedAt: 'desc',
+      createdAt: 'desc',
     },
   });
 
