@@ -141,6 +141,48 @@ export const getPost = async (req: Request, res: Response) => {
   }
 };
 
+export const updatePost = async (req: Request, res: Response) => {
+  try {
+    const { text, photo, photoPublicId, postId } = req.body;
+
+    // validate data
+    if (!text && !photo) {
+      return res.status(422).json({ message: 'Cannot have an empty post' });
+    }
+
+    const Schema = z.object({
+      postId: z.number({
+        required_error: 'Post ID is required',
+        invalid_type_error: 'Post ID is not a valid ID',
+      }),
+      text: z
+        .string({ invalid_type_error: 'text must be a string' })
+        .optional()
+        .transform((value) => value?.trim()),
+      photo: z
+        .string({ invalid_type_error: 'text must be a string' })
+        .optional()
+        .transform((value) => value?.trim()),
+      photoPublicId: z
+        .string({ invalid_type_error: 'photoPublicId must be a string' })
+        .optional(),
+    });
+
+    const validated = Schema.parse({ text, photo, photoPublicId, postId });
+
+    const prevPost = await PostServices.updatePost(validated);
+
+    // after updating the post in database, delete the post photo in cloudinary
+    if (photoPublicId && prevPost.photoPublicId) {
+      const img = await cloudinary.uploader.destroy(prevPost.photoPublicId);
+    }
+
+    return res.status(200).json({ data: prevPost });
+  } catch (error) {
+    errHandler(error, res);
+  }
+};
+
 export const deletePost = async (req: Request, res: Response) => {
   try {
     const postId = req.params.id;

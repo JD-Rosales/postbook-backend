@@ -29,114 +29,38 @@ export const createPost = async ({
   return post;
 };
 
-export const fetchFollowedPosts = async ({
-  selfId,
-  myCursor,
-}: {
-  selfId: number;
-  myCursor?: number;
-}) => {
-  const followedUser = await prisma.user.findFirst({
-    where: {
-      id: selfId,
-    },
-    select: {
-      following: {
-        select: {
-          followingId: true,
-        },
-      },
-    },
-  });
-
-  if (!followedUser) throw new CustomeError(404, 'User not found');
-
-  const idList = followedUser.following.map((post) => {
-    return post.followingId;
-  });
-
-  const posts = await prisma.post.findMany({
-    skip: myCursor ? 1 : 0,
-    take: 2,
-    ...(myCursor && {
-      cursor: {
-        id: myCursor,
-      },
-    }),
-    where: {
-      authorId: {
-        in: idList,
-      },
-    },
-    select: {
-      id: true,
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  });
-
-  return posts;
-};
-
-export const fetchUserPosts = async ({
-  userId,
-  myCursor,
-}: {
-  userId: number;
-  myCursor?: number;
-}) => {
-  const posts = await prisma.post.findMany({
-    skip: myCursor ? 1 : 0,
-    take: 2,
-    ...(myCursor && {
-      cursor: {
-        id: myCursor,
-      },
-    }),
-    where: {
-      authorId: userId,
-    },
-    select: {
-      id: true,
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  });
-
-  return posts;
-};
-
-export const sharePost = async ({
-  text,
+export const updatePost = async ({
   postId,
-  authorId,
+  text,
+  photo,
+  photoPublicId,
 }: {
-  text?: string;
   postId: number;
-  authorId: number;
-}): Promise<Post> => {
-  const originalPost = await prisma.post.findUnique({
+  text?: string;
+  photo?: string;
+  photoPublicId?: string;
+}) => {
+  const prevPost = await prisma.post.findUnique({
     where: {
       id: postId,
     },
   });
 
-  if (!originalPost) {
-    throw new CustomeError(404, 'Original post not found');
-  }
+  if (!prevPost) throw new CustomeError(404, 'Cannot find post to update');
 
-  const post = await prisma.post.create({
+  const updatedPost = await prisma.post.update({
+    where: {
+      id: postId,
+    },
     data: {
-      postType: 'shared a post',
-      text,
-      authorId,
-      sharedPostId: originalPost.id,
+      ...(text && { text }),
+      ...(photo && { photo }),
+      ...(photoPublicId && { photoPublicId }),
     },
   });
 
-  return post;
+  // return the prevPost in order for deletion of previous photo in cloudinary if exist
+  return prevPost;
 };
 
 export const getPost = async (postId: number) => {
@@ -216,6 +140,116 @@ export const deletePost = async ({
   });
 
   return deletedPost;
+};
+
+export const sharePost = async ({
+  text,
+  postId,
+  authorId,
+}: {
+  text?: string;
+  postId: number;
+  authorId: number;
+}): Promise<Post> => {
+  const originalPost = await prisma.post.findUnique({
+    where: {
+      id: postId,
+    },
+  });
+
+  if (!originalPost) {
+    throw new CustomeError(404, 'Original post not found');
+  }
+
+  const post = await prisma.post.create({
+    data: {
+      postType: 'shared a post',
+      text,
+      authorId,
+      sharedPostId: originalPost.id,
+    },
+  });
+
+  return post;
+};
+
+export const fetchFollowedPosts = async ({
+  selfId,
+  myCursor,
+}: {
+  selfId: number;
+  myCursor?: number;
+}) => {
+  const followedUser = await prisma.user.findFirst({
+    where: {
+      id: selfId,
+    },
+    select: {
+      following: {
+        select: {
+          followingId: true,
+        },
+      },
+    },
+  });
+
+  if (!followedUser) throw new CustomeError(404, 'User not found');
+
+  const idList = followedUser.following.map((post) => {
+    return post.followingId;
+  });
+
+  const posts = await prisma.post.findMany({
+    skip: myCursor ? 1 : 0,
+    take: 2,
+    ...(myCursor && {
+      cursor: {
+        id: myCursor,
+      },
+    }),
+    where: {
+      authorId: {
+        in: idList,
+      },
+    },
+    select: {
+      id: true,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  return posts;
+};
+
+export const fetchUserPosts = async ({
+  userId,
+  myCursor,
+}: {
+  userId: number;
+  myCursor?: number;
+}) => {
+  const posts = await prisma.post.findMany({
+    skip: myCursor ? 1 : 0,
+    take: 2,
+    ...(myCursor && {
+      cursor: {
+        id: myCursor,
+      },
+    }),
+    where: {
+      authorId: userId,
+    },
+    select: {
+      id: true,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  return posts;
 };
 
 export const getTotalLikes = async ({
