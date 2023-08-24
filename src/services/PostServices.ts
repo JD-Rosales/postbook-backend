@@ -201,7 +201,7 @@ export const fetchFollowedPosts = async ({
 
   const posts = await prisma.post.findMany({
     skip: myCursor ? 1 : 0,
-    take: 2,
+    take: 5,
     ...(myCursor && {
       cursor: {
         id: myCursor,
@@ -232,7 +232,7 @@ export const fetchUserPosts = async ({
 }) => {
   const posts = await prisma.post.findMany({
     skip: myCursor ? 1 : 0,
-    take: 2,
+    take: 5,
     ...(myCursor && {
       cursor: {
         id: myCursor,

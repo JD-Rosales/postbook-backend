@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { UserRequest } from '../middlewares/VerifyToken';
 import * as FollowService from '../services/FollowServices';
 import z from 'zod';
+import errHandler from '../middlewares/ErrorHandler';
 
 export const followUser = async (req: Request, res: Response) => {
   try {
@@ -11,10 +12,12 @@ export const followUser = async (req: Request, res: Response) => {
     const Schema = z
       .object({
         selfId: z.number({ required_error: 'User ID is required' }),
-        followingId: z.number({
-          required_error: 'Followed user ID is required',
-          invalid_type_error: 'Followed user ID is not a valid ID',
-        }),
+        followingId: z
+          .string({
+            required_error: 'Followed user ID is required',
+            invalid_type_error: 'Followed user ID is not a valid ID',
+          })
+          .transform((value) => parseInt(value)),
       })
       .refine((data) => data.selfId !== data.followingId, {
         message: 'Are you high? you cannot follow yourself',
@@ -27,7 +30,7 @@ export const followUser = async (req: Request, res: Response) => {
 
     return res.status(200).json({ data });
   } catch (error) {
-    return res.status(500).json({ message: (error as Error).message });
+    errHandler(error, res);
   }
 };
 
@@ -38,10 +41,12 @@ export const unfollowUser = async (req: Request, res: Response) => {
 
     const Schema = z.object({
       selfId: z.number({ required_error: 'User ID is required' }),
-      followingId: z.number({
-        required_error: 'Followed user ID is required',
-        invalid_type_error: 'Followed user ID is not a valid ID',
-      }),
+      followingId: z
+        .string({
+          required_error: 'Followed user ID is required',
+          invalid_type_error: 'Followed user ID is not a valid ID',
+        })
+        .transform((value) => parseInt(value)),
     });
 
     const validated = Schema.parse({ selfId, followingId });
@@ -50,7 +55,7 @@ export const unfollowUser = async (req: Request, res: Response) => {
 
     return res.status(202).json({ data });
   } catch (error) {
-    return res.status(500).json({ message: (error as Error).message });
+    errHandler(error, res);
   }
 };
 
@@ -75,7 +80,7 @@ export const isFollowing = async (req: Request, res: Response) => {
 
     return res.status(200).json({ data });
   } catch (error) {
-    return res.status(500).json({ message: (error as Error).message });
+    errHandler(error, res);
   }
 };
 
@@ -98,6 +103,6 @@ export const userFollowers = async (req: Request, res: Response) => {
 
     return res.status(200).json({ data: followers });
   } catch (error) {
-    return res.status(500).json({ message: (error as Error).message });
+    errHandler(error, res);
   }
 };
