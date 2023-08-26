@@ -92,12 +92,20 @@ export const createPost = async (req: Request, res: Response) => {
 
 export const sharePost = async (req: Request, res: Response) => {
   try {
-    const { text, postId } = req.body;
+    const { text, photo, photoPublicId, postId } = req.body;
     const authorId = (req as UserRequest).user.id;
 
     const Schema = z.object({
       text: z
         .string({ invalid_type_error: 'text must be a string' })
+        .optional()
+        .transform((value) => value?.trim()),
+      photo: z
+        .string({ invalid_type_error: 'photo must be a string' })
+        .optional()
+        .transform((value) => value?.trim()),
+      photoPublicId: z
+        .string({ invalid_type_error: 'photoPublicId must be a string' })
         .optional()
         .transform((value) => value?.trim()),
       postId: z.number({
@@ -110,7 +118,13 @@ export const sharePost = async (req: Request, res: Response) => {
       }),
     });
 
-    const validated = Schema.parse({ text, postId, authorId });
+    const validated = Schema.parse({
+      text,
+      photo,
+      photoPublicId,
+      postId,
+      authorId,
+    });
 
     const post = await PostServices.sharePost(validated);
 

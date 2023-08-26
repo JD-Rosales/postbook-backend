@@ -144,10 +144,14 @@ export const deletePost = async ({
 
 export const sharePost = async ({
   text,
+  photo,
+  photoPublicId,
   postId,
   authorId,
 }: {
   text?: string;
+  photo?: string;
+  photoPublicId?: string;
   postId: number;
   authorId: number;
 }): Promise<Post> => {
@@ -165,6 +169,8 @@ export const sharePost = async ({
     data: {
       postType: 'shared a post',
       text,
+      photo,
+      photoPublicId,
       authorId,
       sharedPostId: originalPost.id,
     },
