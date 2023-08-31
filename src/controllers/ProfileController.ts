@@ -102,3 +102,26 @@ export const getUserProfile = async (req: Request, res: Response) => {
     errHandler(error, res);
   }
 };
+
+export const searchUser = async (req: Request, res: Response) => {
+  try {
+    const query = req.query.search?.toString() ?? '';
+
+    const Schema = z.object({
+      query: z
+        .string({
+          required_error: 'Query params is required',
+          invalid_type_error: 'Query params must be a string',
+        })
+        .min(3, 'Query params must contain at least 3 character(s)'),
+    });
+
+    const validated = Schema.parse({ query });
+
+    const users = await ProfileServices.searchUser(validated.query);
+
+    return res.status(200).json({ data: users });
+  } catch (error) {
+    errHandler(error, res);
+  }
+};

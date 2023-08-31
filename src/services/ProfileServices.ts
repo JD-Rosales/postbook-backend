@@ -66,3 +66,33 @@ export const getProfile = async (
 
   return profile;
 };
+
+export const searchUser = async (query: string) => {
+  const users = await prisma.user.findMany({
+    where: {
+      OR: [
+        {
+          email: {
+            contains: query,
+          },
+        },
+        {
+          profile: {
+            firstName: {
+              contains: query,
+            },
+          },
+        },
+        {
+          profile: {
+            lastName: {
+              contains: query,
+            },
+          },
+        },
+      ],
+    },
+  });
+
+  return users;
+};
