@@ -220,7 +220,7 @@ export const deletePost = async (req: Request, res: Response) => {
 
     // after deleting the post in database, delete the post photo in cloudinary
     if (post.photoPublicId) {
-      const img = await cloudinary.uploader.destroy(post.photoPublicId);
+      await cloudinary.uploader.destroy(post.photoPublicId);
     }
 
     return res.status(200).json({ data: post });
