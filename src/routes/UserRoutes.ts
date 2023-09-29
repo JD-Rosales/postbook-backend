@@ -4,6 +4,8 @@ import verifyJwt from '../middlewares/VerifyToken';
 
 const UserRouter = express.Router();
 
+UserRouter.get('/:id', verifyJwt, UserController.getUserProfile);
+UserRouter.put('/', verifyJwt, UserController.updateProfile);
 UserRouter.get('/search', verifyJwt, UserController.searchUser);
 
 export default UserRouter;
