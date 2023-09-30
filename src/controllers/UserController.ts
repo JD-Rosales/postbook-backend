@@ -69,6 +69,8 @@ export const updateProfilePhoto = async (req: Request, res: Response) => {
         authorId: profile.userId,
       });
     }
+
+    return res.status(200).json({ data: profile });
   } catch (error) {
     errHandler(error, res);
   }
@@ -100,6 +102,8 @@ export const updateCoverPhoto = async (req: Request, res: Response) => {
         authorId: cover.userId,
       });
     }
+
+    return res.status(200).json({ data: cover });
   } catch (error) {
     errHandler(error, res);
   }
