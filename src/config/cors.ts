@@ -1,6 +1,7 @@
 const whitelist = [
   'http://localhost:5173',
   'https://friendly-croissant-e5dcc5.netlify.app',
+  'https://postsbook.netlify.app',
   'http://192.168.8.102:5173',
 ];
 
