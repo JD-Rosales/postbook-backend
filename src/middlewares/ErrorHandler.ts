@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { ZodError } from 'zod';
 import CustomeError from '../utils/CustomeError';
 
@@ -10,7 +10,9 @@ const errHandler = (error: unknown, res: Response) => {
   } else if (error instanceof Error)
     return res.status(400).json({ message: error.message });
   else
-    return res.status(500).json({ message: 'An unexpected error has occured' });
+    return res
+      .status(500)
+      .json({ message: 'An unexpected error has occured.' });
 };
 
 export default errHandler;
