@@ -1,4 +1,4 @@
-import { PrismaClient, Post, Profile } from '@prisma/client';
+import { PrismaClient, Post } from '@prisma/client';
 import CustomeError from '../utils/CustomeError';
 
 const prisma = new PrismaClient();
@@ -48,12 +48,12 @@ export const updatePost = async ({
 
   if (!prevPost) throw new CustomeError(404, 'Cannot find post to update');
 
-  const updatedPost = await prisma.post.update({
+  await prisma.post.update({
     where: {
       id: postId,
     },
     data: {
-      ...(text && { text }),
+      text,
       ...(photo && { photo }),
       ...(photoPublicId && { photoPublicId }),
     },

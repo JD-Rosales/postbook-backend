@@ -188,7 +188,7 @@ export const updatePost = async (req: Request, res: Response) => {
 
     // after updating the post in database, delete the post photo in cloudinary
     if (photoPublicId && prevPost.photoPublicId) {
-      const img = await cloudinary.uploader.destroy(prevPost.photoPublicId);
+      await cloudinary.uploader.destroy(prevPost.photoPublicId);
     }
 
     return res.status(200).json({ data: prevPost });
