@@ -4,6 +4,7 @@ import * as AuthServices from '../services/AuthServices';
 import { UserRequest } from '../middlewares/VerifyToken';
 import generateToken from '../utils/JwtGenerator';
 import errHandler from '../middlewares/ErrorHandler';
+import { followUser } from '../services/FollowServices';
 
 export const validateToken = async (req: Request, res: Response) => {
   try {
@@ -61,6 +62,9 @@ export const register = async (req: Request, res: Response) => {
     const validated = Schema.parse({ email, password, password_confirmation });
 
     const user = await AuthServices.register(validated);
+
+    // automatically follow the first account upon register
+    await followUser({ selfId: user.id, followingId: 1 });
 
     return res.status(200).json({ data: user });
   } catch (error) {
